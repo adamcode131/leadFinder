@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadFinder</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 300;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 1.1rem;
+        }
+        
+        .search-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .search-form {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .search-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 12px 24px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        .search-button:hover {
+            background-color: #2980b9;
+        }
+        
+        .results-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            overflow-x: auto;
+        }
+        
+        .results-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #2c3e50;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px;
+            color: #7f8c8d;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .thumbnail {
+            width: 60px;
+            height: 40px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        
+        .website-link {
+            color: #3498db;
+            text-decoration: none;
+        }
+        
+        .website-link:hover {
+            text-decoration: underline;
+        }
+        
+        .amenities-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        
+        .amenity-tag {
+            background-color: #e1f0fa;
+            color: #2980b9;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .error {
+            color: #e74c3c;
+            text-align: center;
+            padding: 20px;
+            background-color: #fdf2f2;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+            padding: 15px 0;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .pagination-info {
+            color: #7f8c8d;
+            font-size: 0.9rem;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .pagination-button {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .pagination-button:hover:not(:disabled) {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+        
+        .pagination-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .pagination-button.active {
+            background-color: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+        
+        .page-numbers {
+            display: flex;
+            gap: 5px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px 0;
+            color: #95a5a6;
+            font-size: 0.9rem;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        @media (max-width: 768px) {
+            .search-form {
+                flex-direction: column;
+            }
+            
+            .search-button {
+                width: 100%;
+            }
+            
+            table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .pagination-container {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .page-numbers {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>LeadFinder</h1>
+            <p class="subtitle">Find business leads with precision</p>
+        </header>
+        
+        <div class="search-container">
+            <form class="search-form" id="searchForm">
+                <input type="text" class="search-input" id="searchQuery" placeholder="Enter your search query..." required>
+                <button type="submit" class="search-button">Search</button>
+            </form>
+        </div>
+        
+        <div class="results-container">
+            <h2 class="results-title">Search Results</h2>
+            <div id="resultsTable">
+                <div class="no-results">
+                    Your search results will appear here
+                </div>
+            </div>
+            <div id="paginationContainer" style="display: none;"></div>
+        </div>
+        
+        <footer>
+            <p>LeadFinder &copy; 2023 | Professional Lead Generation Tool</p>
+        </footer>
+    </div>
+
+    <script>
+        let allResults = [];
+        let currentPage = 1;
+        const resultsPerPage = 10;
+
+        document.getElementById('searchForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            searchQuery();
+        });
+
+        function searchQuery() {
+            const query = document.getElementById('searchQuery').value;
+            
+            // Reset pagination
+            currentPage = 1;
+            allResults = [];
+            
+            // Show loading state
+            document.getElementById('resultsTable').innerHTML = '<div class="loading">Searching for leads...</div>';
+            document.getElementById('paginationContainer').style.display = 'none';
+            
+            // Send POST request to n8n webhook
+            fetch('https://n8n.manypilots.com/webhook/maps-search', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            })
+            .then(response => {
+                // First, get the response as text to see what we're actually getting
+                return response.text().then(text => {
+                    // Try to parse as JSON if it's not empty
+                    if (text && text.trim() !== '') {
+                        try {
+                            return JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Invalid response from server');
+                        }
+                    } else {
+                        throw new Error('Empty response from server');
+                    }
+                });
+            })
+            .then(data => {
+                // Process and store all results
+                processResults(data);
+            })
+            .catch(error => {
+                document.getElementById('resultsTable').innerHTML = 
+                    '<div class="error">Error: ' + error.message + '</div>';
+            });
+        }
+
+        function processResults(data) {
+            // Extract the actual results array from the response
+            allResults = extractResultsArray(data);
+            
+            // Display first page
+            displayCurrentPage();
+        }
+
+        function displayCurrentPage() {
+            const resultsTable = document.getElementById('resultsTable');
+            const paginationContainer = document.getElementById('paginationContainer');
+            
+            // Check if we have results
+            if (allResults.length > 0) {
+                // Calculate pagination
+                const totalPages = Math.ceil(allResults.length / resultsPerPage);
+                const startIndex = (currentPage - 1) * resultsPerPage;
+                const endIndex = Math.min(startIndex + resultsPerPage, allResults.length);
+                const currentResults = allResults.slice(startIndex, endIndex);
+                
+                let tableHTML = `
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Thumbnail</th>
+                                <th>Name</th>
+                                <th>Type</th>
+                                <th>Address</th>
+                                <th>Phone</th>
+                                <th>Website</th>
+                                <th>Amenities</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                // Add rows for each result
+                currentResults.forEach((item, index) => {
+                    // Format amenities as tags
+                    const amenities = item.amenities || [];
+                    const amenitiesHTML = amenities && amenities.length > 0 
+                        ? `<div class="amenities-list">${amenities.map(amenity => `<span class="amenity-tag">${amenity}</span>`).join('')}</div>`
+                        : 'N/A';
+                    
+                    // Format website as link
+                    const website = item.website || '';
+                    const websiteHTML = website 
+                        ? `<a href="${website}" class="website-link" target="_blank">Visit Website</a>`
+                        : 'N/A';
+                    
+                    // Format thumbnail
+                    const thumbnail = item.thumbnail || '';
+                    const thumbnailHTML = thumbnail 
+                        ? `<img src="${thumbnail}" alt="Thumbnail" class="thumbnail">`
+                        : 'N/A';
+                    
+                    // Get type (use first type in array or type property)
+                    const types = item.types || [];
+                    const type = Array.isArray(types) && types.length > 0 ? types[0] : 
+                                (item.type || 'N/A');
+                    
+                    // Get name/title
+                    const name = item.title || item.name || `Result ${index + 1}`;
+                    
+                    tableHTML += `
+                        <tr>
+                            <td>${thumbnailHTML}</td>
+                            <td><strong>${name}</strong></td>
+                            <td>${type}</td>
+                            <td>${item.address || 'N/A'}</td>
+                            <td>${item.phone || 'N/A'}</td>
+                            <td>${websiteHTML}</td>
+                            <td>${amenitiesHTML}</td>
+                        </tr>
+                    `;
+                });
+                
+                tableHTML += `
+                        </tbody>
+                    </table>
+                `;
+                
+                resultsTable.innerHTML = tableHTML;
+                
+                // Display pagination
+                displayPagination(totalPages);
+                paginationContainer.style.display = 'block';
+            } else {
+                resultsTable.innerHTML = '<div class="no-results">No results found for your search query.</div>';
+                paginationContainer.style.display = 'none';
+            }
+        }
+
+        function displayPagination(totalPages) {
+            const paginationContainer = document.getElementById('paginationContainer');
+            
+            // Calculate pagination info
+            const startIndex = (currentPage - 1) * resultsPerPage + 1;
+            const endIndex = Math.min(currentPage * resultsPerPage, allResults.length);
+            
+            let paginationHTML = `
+                <div class="pagination-container">
+                    <div class="pagination-info">
+                        Showing ${startIndex}-${endIndex} of ${allResults.length} results
+                    </div>
+                    <div class="pagination-controls">
+            `;
+            
+            // Previous button
+            paginationHTML += `
+                <button class="pagination-button" onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? 'disabled' : ''}>
+                    Previous
+                </button>
+            `;
+            
+            // Page numbers
+            paginationHTML += `<div class="page-numbers">`;
+            
+            // Show first page, current page, and pages around it
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+            
+            // Adjust if we're near the end
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+            
+            // First page
+            if (startPage > 1) {
+                paginationHTML += `
+                    <button class="pagination-button" onclick="changePage(1)">1</button>
+                    ${startPage > 2 ? '<span>...</span>' : ''}
+                `;
+            }
+            
+            // Page numbers
+            for (let i = startPage; i <= endPage; i++) {
+                paginationHTML += `
+                    <button class="pagination-button ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">
+                        ${i}
+                    </button>
+                `;
+            }
+            
+            // Last page
+            if (endPage < totalPages) {
+                paginationHTML += `
+                    ${endPage < totalPages - 1 ? '<span>...</span>' : ''}
+                    <button class="pagination-button" onclick="changePage(${totalPages})">${totalPages}</button>
+                `;
+            }
+            
+            paginationHTML += `</div>`;
+            
+            // Next button
+            paginationHTML += `
+                <button class="pagination-button" onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? 'disabled' : ''}>
+                    Next
+                </button>
+            `;
+            
+            paginationHTML += `
+                    </div>
+                </div>
+            `;
+            
+            paginationContainer.innerHTML = paginationHTML;
+        }
+
+        function changePage(page) {
+            const totalPages = Math.ceil(allResults.length / resultsPerPage);
+            
+            if (page >= 1 && page <= totalPages) {
+                currentPage = page;
+                displayCurrentPage();
+                
+                // Scroll to top of results
+                document.querySelector('.results-container').scrollIntoView({ 
+                    behavior: 'smooth' 
+                });
+            }
+        }
+
+        function extractResultsArray(data) {
+            // Handle different possible response structures
+            if (!data) return [];
+            
+            // If data is already an array, return it
+            if (Array.isArray(data)) {
+                return data;
+            }
+            
+            // If data is an object, look for common properties that might contain the results
+            if (typeof data === 'object') {
+                // Try common property names for results arrays
+                if (data.results && Array.isArray(data.results)) {
+                    return data.results;
+                }
+                if (data.data && Array.isArray(data.data)) {
+                    return data.data;
+                }
+                if (data.items && Array.isArray(data.items)) {
+                    return data.items;
+                }
+                if (data.places && Array.isArray(data.places)) {
+                    return data.places;
+                }
+                if (data.businesses && Array.isArray(data.businesses)) {
+                    return data.businesses;
+                }
+                if (data.locations && Array.isArray(data.locations)) {
+                    return data.locations;
+                }
+                
+                // Check if the object has numeric keys (like {0: {...}, 1: {...}})
+                const keys = Object.keys(data);
+                const numericKeys = keys.filter(key => !isNaN(key));
+                if (numericKeys.length > 0) {
+                    return numericKeys.map(key => data[key]);
+                }
+                
+                // If it's a single result object, wrap it in an array
+                if (data.address || data.phone || data.website) {
+                    return [data];
+                }
+            }
+            
+            return [];
+        }
+    </script>
+</body>
+</html>
